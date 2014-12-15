@@ -8,8 +8,8 @@ from resource import validatable
 
 class Openstack(Resource):
 
-    def __init__(self):
-        super(Openstack,self).__init__()
+    def __init__(self, details=None):
+        super(Openstack,self).__init__(details)
 
     @detectable
     def tenant_name(self):

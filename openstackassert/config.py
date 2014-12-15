@@ -1,1 +1,3 @@
 stop = False
+
+collector = 'Ansible'
