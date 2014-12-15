@@ -24,7 +24,7 @@ class Router(Resource):
     def id(self):
         return self._id
 
-    def _fetch_base(self):
+    def _fetch_api(self):
         try:
             router = self._neutron.show_router(self._id).get('router')
             self._details = router
@@ -36,7 +36,7 @@ class Router(Resource):
                 logging.exception(e.message)
                 raise e
 
-    def _fetch_hosts(self):
+    def _fetch_api_hosts(self):
         try:
             agents = self._neutron.list_l3_agent_hosting_routers(self._id)\
                                   .get('agents')
@@ -55,7 +55,7 @@ class Router(Resource):
                 logging.exception(e.message)
                 raise e
 
-    def _fetch_ports(self):
+    def _fetch_api_ports(self):
         try:
             ports = self._neutron.list_ports(device_id=self._id).get('ports')
             self._details['ports'] = ports
@@ -69,39 +69,39 @@ class Router(Resource):
 
     @detectable
     def name(self):
-        return self._return_or_fetch(self._fetch_base, 'name')
+        return self._return_or_fetch(self._fetch_api, 'name')
 
     @detectable
     def admin_state_up(self):
-        return self._return_or_fetch(self._fetch_base, 'admin_state_up')
+        return self._return_or_fetch(self._fetch_api, 'admin_state_up')
 
     @detectable
     def status(self):
-        return self._return_or_fetch(self._fetch_base, 'status')
+        return self._return_or_fetch(self._fetch_api, 'status')
 
     @detectable
     def tenant_id(self):
-        return self._return_or_fetch(self._fetch_base, 'tenant_id')
+        return self._return_or_fetch(self._fetch_api, 'tenant_id')
 
     @detectable
     def external_gateway_info(self):
-        return self._return_or_fetch(self._fetch_base, 'external_gateway_info')
+        return self._return_or_fetch(self._fetch_api, 'external_gateway_info')
 
     @detectable
     def routes(self):
-        return self._return_or_fetch(self._fetch_base, 'routes')
+        return self._return_or_fetch(self._fetch_api, 'routes')
 
     @detectable
     def hosts(self):
-        return self._return_or_fetch(self._fetch_hosts, 'hosts')
+        return self._return_or_fetch(self._fetch_api_hosts, 'hosts')
 
     @detectable
     def ports(self):
-        return self._return_or_fetch(self._fetch_ports, 'ports')
+        return self._return_or_fetch(self._fetch_api_ports, 'ports')
 
     @detectable
     def gateway(self):
-        ports = self._return_or_fetch(self._fetch_ports, 'ports')
+        ports = self._return_or_fetch(self._fetch_api_ports, 'ports')
         for one_port in ports:
             if one_port['device_owner'] == 'network:router_gateway':
                return Port(one_port['id'], one_port)
@@ -109,7 +109,7 @@ class Router(Resource):
 
     @detectable
     def interfaces(self):
-        ports = self._return_or_fetch(self._fetch_ports, 'ports')
+        ports = self._return_or_fetch(self._fetch_api_ports, 'ports')
         return [ Port(one_port['id'], one_port) for one_port in ports 
                 if one_port['device_owner'] == 'network:router_interface']
 

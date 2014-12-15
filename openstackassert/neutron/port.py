@@ -12,7 +12,7 @@ class Port(Resource):
     def id(self):
         return self._id
 
-    def _fetch_base(self):
+    def _fetch_api(self):
         try:
             port = self._neutron.show_port(self._id).get('port')
             self._details = port
@@ -36,12 +36,12 @@ class Port(Resource):
                     continue
             self._details['binding'] = binding
         else:
-            self._fetch_base()
+            self._fetch_api()
             self._fetch_binding()
 
     @detectable
     def status(self):
-        return self._return_or_fetch(self._fetch_base, "status")
+        return self._return_or_fetch(self._fetch_api, "status")
 
     @detectable
     def binding(self):
@@ -49,48 +49,48 @@ class Port(Resource):
 
     @detectable
     def name(self):
-        return self._return_or_fetch(self._fetch_base, "name")
+        return self._return_or_fetch(self._fetch_api, "name")
 
     @detectable
     def allowed_address_pairs(self):
-        return self._return_or_fetch(self._fetch_base, "allowed_address_pairs")
+        return self._return_or_fetch(self._fetch_api, "allowed_address_pairs")
 
     @detectable
     def admin_state_up(self):
-        return self._return_or_fetch(self._fetch_base, "admin_state_up")
+        return self._return_or_fetch(self._fetch_api, "admin_state_up")
 
     @detectable
     def network_id(self):
-        return self._return_or_fetch(self._fetch_base, "network_id")
+        return self._return_or_fetch(self._fetch_api, "network_id")
 
     @detectable
     def tenant_id(self):
-        return self._return_or_fetch(self._fetch_base, "tenant_id")
+        return self._return_or_fetch(self._fetch_api, "tenant_id")
 
     @detectable
     def extra_dhcp_opts(self):
-        return self._return_or_fetch(self._fetch_base, "extra_dhcp_opts")
+        return self._return_or_fetch(self._fetch_api, "extra_dhcp_opts")
 
     @detectable
     def device_owner(self):
-        return self._return_or_fetch(self._fetch_base, "device_owner")
+        return self._return_or_fetch(self._fetch_api, "device_owner")
 
     @detectable
     def device_id(self):
-        return self._return_or_fetch(self._fetch_base, "device_id")
+        return self._return_or_fetch(self._fetch_api, "device_id")
 
     @detectable
     def mac_address(self):
-        return self._return_or_fetch(self._fetch_base, "mac_address")
+        return self._return_or_fetch(self._fetch_api, "mac_address")
 
     @detectable
     def fixed_ips(self):
-        return self._return_or_fetch(self._fetch_base, "fixed_ips")
+        return self._return_or_fetch(self._fetch_api, "fixed_ips")
 
     @detectable
     def security_groups(self):
-        return self._return_or_fetch(self._fetch_base, "security_groups")
+        return self._return_or_fetch(self._fetch_api, "security_groups")
 
     @validatable
     def existed(self):
-        return False
+        pass
