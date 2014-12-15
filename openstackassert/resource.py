@@ -88,9 +88,9 @@ class Resource(object):
                     assure_name = "not_has_%s" % func.__name__
                 setattr(self, assure_name, assert_wrapper(func))
 
-    def _fetch_and_return(fetch_func, key):
-        if key not in self._details:
-            fetch_func(self)
+    def _return_or_fetch(self, fetch_func, key, force=False):
+        if key not in self._details or force:
+            fetch_func()
         return self._details.get(key, None)
 
 

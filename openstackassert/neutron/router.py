@@ -1,6 +1,7 @@
 import logging
 
 from openstack import Openstack
+from neutron.port import Port
 from resource import Resource
 from resource import detectable
 from resource import validatable
@@ -11,7 +12,6 @@ class Router(Resource):
 
     def __init__(self, uuid, details=None):
         self._id = uuid
-        self._details = details if details else {}
         openstack = Openstack()
         if openstack.has_neutron():
             self._neutron = openstack.neutron()
@@ -19,7 +19,7 @@ class Router(Resource):
             raise ResourceNotReadyException(resource="Router %s" % uuid,
                                             pre_resource="Openstack",
                                             pre_validate="neutron")
-        super(Router,self).__init__()
+        super(Router,self).__init__(details)
 
     def id(self):
         return self._id
@@ -69,71 +69,53 @@ class Router(Resource):
 
     @detectable
     def name(self):
-        if 'name' not in self._details:
-            self._fetch_base()
-        return self._details.get("name", None)
+        return self._return_or_fetch(self._fetch_base, 'name')
 
     @detectable
     def admin_state_up(self):
-        if 'admin_state_up' not in self._details:
-            self._fetch_base()
-        return self._details.get("admin_state_up", None)
+        return self._return_or_fetch(self._fetch_base, 'admin_state_up')
 
     @detectable
     def status(self):
-        if 'status' not in self._details:
-            self._fetch_base()
-        return self._details.get("status", None)
+        return self._return_or_fetch(self._fetch_base, 'status')
 
     @detectable
     def tenant_id(self):
-        if 'tenant_id' not in self._details:
-            self._fetch_base()
-        return self._details.get("tenant_id", None)
+        return self._return_or_fetch(self._fetch_base, 'tenant_id')
 
     @detectable
     def external_gateway_info(self):
-        if 'external_gateway_info' not in self._details:
-            self._fetch_base()
-        return self._details.get("external_gateway_info", None)
+        return self._return_or_fetch(self._fetch_base, 'external_gateway_info')
 
     @detectable
     def routes(self):
-        if 'routes' not in self._details:
-            self._fetch_base()
-        return self._details.get("routes", None)
+        return self._return_or_fetch(self._fetch_base, 'routes')
 
     @detectable
     def hosts(self):
-        if 'hosts' not in self._details:
-            self._fetch_hosts()
-        return self._details.get("hosts", None)
+        return self._return_or_fetch(self._fetch_hosts, 'hosts')
 
     @detectable
     def ports(self):
-        if 'ports' not in self._details:
-            self._fetch_ports()
-        return self._details.get("ports", None)
+        return self._return_or_fetch(self._fetch_ports, 'ports')
 
     @detectable
     def gateway(self):
-        if 'ports' not in self._details:
-            self._fetch_ports()
-        for port in self._details['ports']:
-            if port['device_owner'] == 'network:router_gateway':
-               return port
+        ports = self._return_or_fetch(self._fetch_ports, 'ports')
+        for one_port in ports:
+            if one_port['device_owner'] == 'network:router_gateway':
+               return Port(one_port['id'], one_port)
         return None
 
     @detectable
     def interfaces(self):
-        if 'ports' not in self._details:
-            self._fetch_ports()
-        return [ port for port in self._details['ports'] 
-                if port['device_owner'] == 'network:router_interface']
+        ports = self._return_or_fetch(self._fetch_ports, 'ports')
+        return [ Port(one_port['id'], one_port) for one_port in ports 
+                if one_port['device_owner'] == 'network:router_interface']
 
     @validatable
     def namespace(self):
-        namespace = "qrouter-%s" % self._uuid
+        namespace = "qrouter-%s" % self._id
         pass
 
     @validatable
