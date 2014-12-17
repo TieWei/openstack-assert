@@ -6,6 +6,7 @@ from resource import Resource
 from resource import detectable
 from resource import validatable
 from exception import ResourceNotReadyException
+from collector import driver
 from neutronclient.common.exceptions import NeutronClientException
 
 class Router(Resource):
@@ -42,11 +43,12 @@ class Router(Resource):
                                   .get('agents')
             for agent in agents:
                 host = {}
-                host['host'] = agent.get('host', None)
+                hostname = agent.get('host', None)
+                host['hostname'] = hostname
                 host['agent_id'] = agent.get('id', None)
                 if 'hosts' not in self._details:
-                    self._details['hosts'] = []
-                self._details['hosts'].append(host)
+                    self._details['hosts'] = {}
+                self._details['hosts'][hostname] = host
         except NeutronClientException as e:
             status_code = getattr(e,'status_code', 0)
             if status_code == 404:
@@ -116,19 +118,39 @@ class Router(Resource):
     @validatable
     def namespace(self):
         namespace = "qrouter-%s" % self._id
-        pass
+        results = driver.validate_netns(self._hosts.keys(), [namespace])
+        assert_results = []
+        for host in self._hosts.keys():
+            per_host = {'namespace' : namespace}
+            if results[host]:
+                per_host['present'] = results[host][namespace]
+            else:
+                per_host['present'] = None
+            assert_results.append(per_host)
+        return assert_results
 
     @validatable
-    def qr_devices(self):
-        for nic in  self._interfaces:
-            port = Port(nic['id'], nic)
-            nic['assert'] = port.existed()
-        return self._interfaces
-
-    @validatable
-    def qg_device(self):
-        port = Port(self._gateway['id'], self._gateway)
-        return port.existed()
+    def nics_in_netns(self):
+        namespace = "qrouter-%s" % self._id
+        qg = "qg-%s" % self._gateway['id'][0:11]
+        nics = [qg]
+        for port in self._interfaces:
+            qr = "qr-%s" % port['id'][0:11]
+            nics.append(qr)
+        results = driver.validate_nic_in_netns(hosts=self._hosts.keys(),
+                                                namespace=namespace,
+                                                ports=nics)
+        assert_results = []
+        for host in self._hosts.keys():
+            per_host = {}
+            if results[host]:
+                per_host = results[host]
+                per_host['assert'] = reduce(lambda pre, now: last&one,
+                                            results[host].values())
+            else:
+                per_host['assert'] = None
+            assert_results.append(per_host)
+        return assert_results 
 
     @validatable
     def ovs_flow(self):

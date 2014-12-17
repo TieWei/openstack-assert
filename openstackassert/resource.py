@@ -49,27 +49,25 @@ def assert_wrapper(func):
         try:
             details = func(*args, **kwargs)
             if isinstance(details, list) and len(details) > 0:
-                result = True if ensure == 'all' else False
-                for one in details:
-                    if isinstance(one, dict) and 'assert' in one:
-                        one_result = False if one['assert'] is None else True
-                        if ensure == 'all':
-                            result = result & one_result
-                        else:
-                            result = result | one_result
-
-            elif details is not None:
-                result = True
+                ensure_all = lambda pre,one: pre & (one['present'] == True)
+                ensure_one = lambda pre,one: pre | (one['present'] == True)
+                if ensure == 'all':
+                    result = reduce(ensure_all, details, 
+                                    initializer={'present':True})
+                else:
+                    result = reduce(ensure_one, details,
+                                    initializer={'present':False})
+            else:
+                result = details['present']
         except OpenstackAssertException as e:
             logging.exception(e.message)
             if config.stop:
                 raise e
             result = not(present)
         finally:
-            result = not(result ^ present)
+            result = (result == present)
             return result
     return result
-
 
 class Resource(object):
 

@@ -1,3 +1,3 @@
 stop = False
 
-collector = 'Ansible'
+collector = 'collector.ansible.AnsibleCollector'

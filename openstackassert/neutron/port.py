@@ -92,5 +92,9 @@ class Port(Resource):
         return self._return_or_fetch(self._fetch_api, "security_groups")
 
     @validatable
-    def existed(self):
+    def ovs_port(self):
+        pass
+
+    @validatable
+    def port_in_ns(self):
         pass
