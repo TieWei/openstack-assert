@@ -95,6 +95,7 @@ class Port(Resource):
     def ovs_port(self):
         pass
 
+
     @validatable
     def port_in_ns(self):
         pass

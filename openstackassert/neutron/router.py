@@ -154,4 +154,4 @@ class Router(Resource):
 
     @validatable
     def ovs_flow(self):
-        pass
+        return None

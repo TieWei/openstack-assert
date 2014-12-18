@@ -1,6 +1,6 @@
 import logging
 import ansible.runner
-import commands as cli
+import collector.commands as cli
 from excepton import AnsibleHostNotAccessable
 from excepton import AnsibleBadReturnException
 
