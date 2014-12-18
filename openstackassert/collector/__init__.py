@@ -8,8 +8,8 @@ def _load_collector(driver, *args, **kwargs):
         sys.exit(1)
     try:
         module, _, class_name = driver.rpartition('.')
-        module = __import__(module)
-        return getattr(module, class_name)
+        __import__(module)
+        return getattr(sys.modules[module], class_name)
     except (ValueError, AttributeError):
         raise ImportError('Collector <%s> cannot be found' % class_name)
 
