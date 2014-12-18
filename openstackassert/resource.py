@@ -58,7 +58,8 @@ def assert_wrapper(func):
                     result = reduce(ensure_one, details,
                                     initializer={'present':False})
             else:
-                result = details['present']
+                if details not in (None, False):
+                result = False if details in (None, False) else True 
         except OpenstackAssertException as e:
             logging.exception(e.message)
             if config.stop:
