@@ -8,8 +8,8 @@ class OpenstackAssertException(Exception):
 
 
 class PreconditionNotMeetException(OpenstackAssertException):
-    msg_fmt = "Resource %(resource)s validate %(validate)s \
-                require precondition %(precondition)s."
+    msg_fmt = "Resource %(resource)s validate %(validate)s" \
+              "require precondition %(precondition)s."
 
 
 class ResourceNotReadyException(OpenstackAssertException):

@@ -1,4 +1,4 @@
-import config
+import openstackassert.config as config
 import sys
 import logging
 

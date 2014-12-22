@@ -49,16 +49,13 @@ def assert_wrapper(func):
         try:
             details = func(*args, **kwargs)
             if isinstance(details, list) and len(details) > 0:
-                ensure_all = lambda pre,one: pre & (one['present'] == True)
-                ensure_one = lambda pre,one: pre | (one['present'] == True)
                 if ensure == 'all':
-                    result = reduce(ensure_all, details, 
-                                    initializer={'present':True})
+                    ensure_all = lambda pre,one: pre & (one['present'] == True)
+                    result = reduce(ensure_all, details, True)
                 else:
-                    result = reduce(ensure_one, details,
-                                    initializer={'present':False})
+                    ensure_one = lambda pre,one: pre | (one['present'] == True)
+                    result = reduce(ensure_one, details, False)
             else:
-                if details not in (None, False):
                 result = False if details in (None, False) else True 
         except OpenstackAssertException as e:
             logging.exception(e.message)

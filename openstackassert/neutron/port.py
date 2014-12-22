@@ -1,6 +1,6 @@
-from resource import Resource
-from resource import detectable
-from resource import validatable
+from openstackassert.resource import Resource
+from openstackassert.resource import detectable
+from openstackassert.resource import validatable
 import re
 
 class Port(Resource):

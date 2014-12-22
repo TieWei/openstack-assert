@@ -1,3 +1,3 @@
 stop = False
 
-collector = 'collector.ansible_collector.AnsibleCollector'
+collector = 'openstackassert.collectors.ansible_collector.AnsibleCollector'

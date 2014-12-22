@@ -1,12 +1,12 @@
 import logging
 
-from openstack import Openstack
-from neutron.port import Port
-from resource import Resource
-from resource import detectable
-from resource import validatable
-from exception import ResourceNotReadyException
-from collector import driver
+from openstackassert.openstack import Openstack
+from openstackassert.neutron.port import Port
+from openstackassert.resource import Resource
+from openstackassert.resource import detectable
+from openstackassert.resource import validatable
+from openstackassert.exceptions import ResourceNotReadyException
+from openstackassert.collector import driver
 from neutronclient.common.exceptions import NeutronClientException
 
 class Router(Resource):
@@ -106,13 +106,13 @@ class Router(Resource):
         ports = self._return_or_fetch(self._fetch_api_ports, 'ports')
         for one_port in ports:
             if one_port['device_owner'] == 'network:router_gateway':
-               return Port(one_port['id'], one_port)
+               return one_port
         return None
 
     @detectable
     def interfaces(self):
         ports = self._return_or_fetch(self._fetch_api_ports, 'ports')
-        return [ Port(one_port['id'], one_port) for one_port in ports 
+        return [ one_port for one_port in ports 
                 if one_port['device_owner'] == 'network:router_interface']
 
     @validatable
@@ -132,23 +132,28 @@ class Router(Resource):
     @validatable
     def nics_in_netns(self):
         namespace = "qrouter-%s" % self._id
-        qg = "qg-%s" % self._gateway['id'][0:11]
-        nics = [qg]
+        if self._gateway:
+            qg = "qg-%s" % self._gateway['id'][0:11]
+            nics = [qg]
+        else:
+            nics = []
         for port in self._interfaces:
             qr = "qr-%s" % port['id'][0:11]
             nics.append(qr)
+        if not nics:
+            return {'present': False }
         results = driver.validate_nic_in_netns(hosts=self._hosts.keys(),
                                                 namespace=namespace,
-                                                ports=nics)
+                                                nics=nics)
         assert_results = []
         for host in self._hosts.keys():
             per_host = {}
             if results[host]:
                 per_host = results[host]
-                per_host['assert'] = reduce(lambda pre, now: last&one,
+                per_host['present'] = reduce(lambda pre, now: last&one,
                                             results[host].values())
             else:
-                per_host['assert'] = None
+                per_host['present'] = None
             assert_results.append(per_host)
         return assert_results 
 

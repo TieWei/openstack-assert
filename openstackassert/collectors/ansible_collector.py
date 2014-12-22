@@ -1,8 +1,8 @@
 import logging
 import ansible.runner
-import collector.commands as cli
-from excepton import AnsibleHostNotAccessable
-from excepton import AnsibleBadReturnException
+import openstackassert.collectors.commands as cli
+from openstackassert.exceptions import AnsibleHostNotAccessable
+from openstackassert.exceptions import AnsibleBadReturnException
 
 class AnsibleCollector(object):
 
@@ -12,7 +12,7 @@ class AnsibleCollector(object):
         else:
             self._timeout = 5
 
-    def _run(hosts, cmd, module='shell'):
+    def _run(self, hosts, cmd, module='shell'):
         hosts = hosts if isinstance(hosts, list) else [hosts]
         results = ansible.runner.Runner(
             run_hosts=hosts,
@@ -84,15 +84,15 @@ class AnsibleCollector(object):
         pass
 
 
-    def _validate_via_shell(hosts, cmd, builder_func):
+    def _validate_via_shell(self, hosts, cmd, builder_func):
         return self._validate(hosts, cmd, self._shell_filter, builder_func)
 
-    def _validate(hosts, cmd, filter_func, builder_func):
+    def _validate(self, hosts, cmd, filter_func, builder_func):
         details = self._run(hosts, cmd)
         results = {}
         for host in hosts:
             if host in details and filter_func(details[host]):
-                results[host] = builder_func(results[host])
+                results[host] = builder_func(details[host])
             else:       
                 if host not in results:
                     excepton = AnsibleHostNotAccessable(host=host)
